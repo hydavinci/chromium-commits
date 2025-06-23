@@ -1,125 +1,212 @@
 # Chromium Commits Query Tool
 
-A Python tool for getting the latest change information for specified files in the Chromium repository.
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-orange.svg)](https://modelcontextprotocol.io)
+
+A powerful tool to query the latest commit information for files in the Chromium repository. Get detailed commit data including hash, author, timestamp, commit message, modified files, and diff information through CLI, Python API, or MCP server.
 
 ## Features
 
-- Input file relative path (e.g., `components/sync/utils/edge_sync_state_utils.cc`)
-- Output complete commit information for the latest change to that file, including:
-  - Commit hash value
-  - Author and committer information
-  - Commit time
-  - Commit message
-  - List of all files modified in this commit
+- 🔍 Query latest commit information for any file in the Chromium repository
+- 📊 Detailed output including commit hash, author, timestamp, and message
+- 📝 View modified files and code diffs
+- 🔧 Multiple interfaces: CLI, Python API, and MCP server
+- 📦 Batch processing capabilities
+- 🐳 Docker support for easy deployment
+- 🌐 RESTful API through MCP (Model Context Protocol)
 
-## Install Dependencies
+## Installation
+
+### Prerequisites
+- Python 3.8 or higher
+- Internet connection (for accessing Chromium's Gitiles API)
+
+### Quick Install
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd chromium-commits
+
+# Install dependencies
 pip install -r requirements.txt
+```
+
+### Docker Installation
+
+```bash
+# Build the Docker image
+docker build -t chromium-commits .
+
+# Run the container
+docker run chromium-commits
 ```
 
 ## Usage
 
-### Basic Usage
+### Quick Start
 
 ```bash
-python get_chromium_commits.py "components/sync/utils/edge_sync_state_utils.cc"
+# Basic usage - get latest commit for a file
+python get_chromium_commits.py "components/sync/service/data_type_manager.cc"
 ```
 
-### Command Line Options
-
-- `--output <filename>` or `-o <filename>`: Save results to specified file
-
-### Examples
-
-1. Get complete change information for a file (including diff code comparison):
-```bash
-python get_chromium_commits.py "components/sync/utils/edge_sync_state_utils.cc"
-```
-
-2. Save results to a file:
-```bash
-python get_chromium_commits.py -o result.txt "components/sync/utils/edge_sync_state_utils.cc"
-```
-
-## Batch Processing
-
-The tool also provides batch processing functionality to handle multiple files at once:
+### Command Line Interface
 
 ```bash
-# Batch get file information (including diff)
+# Basic query
+python get_chromium_commits.py "path/to/file.cc"
+
+# Save output to file
+python get_chromium_commits.py -o result.txt "path/to/file.cc"
+
+# Batch processing multiple files
 python batch_get_commits.py files.txt
 
-# Batch process and save results
-python batch_get_commits.py -o batch_results.txt files.txt
+# Show help
+python get_chromium_commits.py --help
 ```
 
-File list format (one file path per line, lines starting with # are comments):
+### MCP Server
+
+Start the MCP server to enable integration with MCP-compatible tools:
+
+```bash
+# Start the server
+python server.py
+
+# Or use Docker
+docker run chromium-commits
 ```
-# Example file list
-README.md
-components/sync/model/model_type_sync_bridge.cc
-components/autofill/core/browser/webdata/addresses/autofill_profile_sync_bridge.cc
+
+The MCP server provides the `get_chromium_latest_commit` tool that can be used by MCP clients to query commit information.
+
+### Python API
+
+Use the `ChromiumCommitFetcher` class in your Python projects:
+
+```python
+from get_chromium_commits import ChromiumCommitFetcher
+
+# Initialize the fetcher
+fetcher = ChromiumCommitFetcher()
+
+# Get basic commit info
+result = fetcher.get_file_commit_info("README.md")
+
+# Get detailed info with diff
+result = fetcher.get_file_commit_info(
+    "components/sync/service/data_type_manager.cc", 
+    detailed=True, 
+    show_diff=True
+)
+
+print(result)
+```
+
+### Example Usage
+
+See `example_usage.py` for comprehensive examples of how to use the ChromiumCommitFetcher class with various file paths and options.
+
+## Project Structure
+
+```
+chromium-commits/
+├── get_chromium_commits.py    # Main CLI tool and ChromiumCommitFetcher class
+├── batch_get_commits.py       # Batch processing utility
+├── server.py                  # MCP server implementation
+├── example_usage.py           # Usage examples and demonstrations
+├── requirements.txt           # Python dependencies
+├── Dockerfile                 # Docker configuration
+├── smithery.yaml             # Smithery MCP configuration
+├── LICENSE                   # MIT license
+└── README.md                 # This file
 ```
 
 ## Output Format
 
-The tool outputs information in the following format:
+The tool returns comprehensive commit information in a structured format:
 
 ```
-================================================================================
-CHROMIUM REPOSITORY FILE LATEST CHANGE INFORMATION
-================================================================================
-Commit Hash: abc123def456...
+Commit Hash: abc123def456789...
 Author: John Doe <john.doe@chromium.org>
-Committer: John Doe <john.doe@chromium.org>
 Commit Time: 2024-06-20 10:30:45 UTC
+Commit Message: Fix data type manager implementation
 
-Commit Message:
-----------------------------------------
-  Fix edge sync state utils implementation
-  
-  This commit fixes several issues in the edge sync state utilities
-  and improves error handling.
+Files modified in this commit:
+[MODIFIED] components/sync/service/data_type_manager.cc
+[MODIFIED] components/sync/service/data_type_manager.h
+[ADDED] components/sync/service/test_helpers.cc
 
-All files modified in this commit:
-----------------------------------------
-  [MODIFIED] components/sync/utils/edge_sync_state_utils.cc
-  [MODIFIED] components/sync/utils/edge_sync_state_utils.h
-  [ADDED] components/sync/utils/edge_sync_state_utils_unittest.cc
-
-Code Change Details (DIFF):
-================================================================================
-diff --git a/components/sync/utils/edge_sync_state_utils.cc b/components/sync/utils/edge_sync_state_utils.cc
-index 1234567..abcdefg 100644
---- a/components/sync/utils/edge_sync_state_utils.cc
-+++ b/components/sync/utils/edge_sync_state_utils.cc
-@@ -10,6 +10,10 @@
- 
- namespace sync_utils {
- 
-+bool IsEdgeSyncEnabled() {
-+  return base::FeatureList::IsEnabled(features::kEdgeSync);
-+}
-+
- void InitializeEdgeSyncState() {
-   // Implementation details...
+--- a/components/sync/service/data_type_manager.cc
++++ b/components/sync/service/data_type_manager.cc
+@@ -15,6 +15,10 @@
+ void DataTypeManager::Start() {
++  // Initialize sync state
++  if (!sync_state_) {
++    sync_state_ = std::make_unique<SyncState>();
++  }
+   // existing implementation...
  }
-================================================================================
 ```
 
-## Notes
+## API Reference
 
-- Requires network connection to access Chromium's Git repository API
-- File paths use paths relative to the Chromium source root directory
-- Supports both Windows and Unix style path separators (automatically converted)
-- Getting diff content may take a long time, especially for large commits
-- Diff output is limited to 1000 lines to avoid excessively long output (full diff will be saved to file)
-- **Default Feature**: The tool now shows detailed diff code comparison by default
+### ChromiumCommitFetcher Class
 
-## API Documentation
+#### Methods
 
-This tool uses Chromium's Gitiles API to get information:
-- Base URL: `https://chromium.googlesource.com/chromium/src`
-- Get file history: `/+log/<file_path>?format=JSON&n=1`
-- Get commit details: `/+/<commit_hash>?format=JSON`
+- **`get_file_commit_info(file_path, detailed=False, show_diff=False)`**
+  - `file_path` (str): Relative path to the file in Chromium repository
+  - `detailed` (bool): Include detailed commit information
+  - `show_diff` (bool): Include code diff in the output
+  - Returns: Formatted string with commit information
+
+- **`get_file_latest_commit(file_path)`**
+  - Returns raw commit data as dictionary
+
+## MCP Integration
+
+This tool is compatible with the Model Context Protocol (MCP), allowing integration with MCP-enabled applications. The MCP server exposes the following tools:
+
+- **`get_chromium_latest_commit`**: Query latest commit information for a file
+
+## Requirements
+
+- **Python**: 3.8 or higher
+- **Dependencies**: `requests>=2.28.0` (see `requirements.txt`)
+- **Network**: Internet connection to access Chromium's Gitiles API
+- **Optional**: Docker for containerized deployment
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## Troubleshooting
+
+### Common Issues
+
+- **Network connectivity**: Ensure you have internet access to reach `chromium.googlesource.com`
+- **File not found**: Verify the file path exists in the Chromium repository
+- **API rate limits**: The tool respects Gitiles API rate limits automatically
+
+### Support
+
+- Check the `example_usage.py` file for usage examples
+- Review error messages for specific guidance
+- Ensure all dependencies are installed correctly
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built using the Chromium Gitiles API
+- Compatible with the Model Context Protocol (MCP)
+- Thanks to the Chromium project for providing public API access
