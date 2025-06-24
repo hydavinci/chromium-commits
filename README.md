@@ -210,3 +210,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built using the Chromium Gitiles API
 - Compatible with the Model Context Protocol (MCP)
 - Thanks to the Chromium project for providing public API access
+
+[![smithery badge](https://smithery.ai/badge/@hydavinci/chromium-commits)](https://smithery.ai/server/@hydavinci/chromium-commits)
