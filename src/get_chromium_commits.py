@@ -46,7 +46,7 @@ class ChromiumCommitFetcher:
             response = requests.get(url, timeout=30)
             response.raise_for_status()
 
-            # Gitiles API returns JSON with a security prefix that needs to be removed
+            # Gitiles API returns JSON with a security prefix ")]}'" that needs to be removed
             content = response.text
             if content.startswith(")]}'"):
                 content = content[4:]
@@ -89,7 +89,7 @@ class ChromiumCommitFetcher:
             response = requests.get(url, timeout=30)
             response.raise_for_status()
 
-            # Remove security prefix
+            # Remove security prefix ")]}'" from Gitiles API response
             content = response.text
             if content.startswith(")]}'"):
                 content = content[4:]
@@ -124,12 +124,12 @@ class ChromiumCommitFetcher:
             print(f"Getting commit diff: {commit_hash}")
             response = requests.get(
                 url, timeout=120
-            )  # diff may be large, increase timeout
+            )  # Diff may be large, increase timeout to 120 seconds
             if response.status_code == 404:
                 return None
             response.raise_for_status()
 
-            # If returned content is base64 encoded, need to decode
+            # If returned content is base64 encoded, decode it
             content = response.text
             if content and not content.startswith("diff "):
                 try:
@@ -232,7 +232,7 @@ class ChromiumCommitFetcher:
 
             if len(diff_lines) > max_lines:
                 result.append(
-                    f"Note: diff content is too long, showing only first {max_lines} lines"
+                    f"Note: Diff content is too long, showing only first {max_lines} lines"
                 )
                 result.append("-" * 40)
                 for line in diff_lines[:max_lines]:
@@ -281,7 +281,7 @@ class ChromiumCommitFetcher:
 
 
 def main():
-    """Main function"""
+    """Main function for command line interface"""
     parser = argparse.ArgumentParser(
         description="Get latest change information for specified files in Chromium repository",
         epilog='Example: python get_chromium_commits.py "components/sync/service/data_type_manager.cc"',

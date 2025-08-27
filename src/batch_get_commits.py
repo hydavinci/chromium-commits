@@ -9,7 +9,7 @@ from get_chromium_commits import ChromiumCommitFetcher
 
 
 def main():
-    """Batch process multiple files"""
+    """Main function for batch processing multiple files"""
     parser = argparse.ArgumentParser(
         description="Batch get latest change information for multiple files in Chromium repository",
         epilog="Example: python batch_get_commits.py files.txt",
@@ -47,7 +47,7 @@ def main():
     for i, file_path in enumerate(file_paths, 1):
         print(f"[{i}/{len(file_paths)}] Processing file: {file_path}")
 
-        # Show detailed information and diff by default
+        # Get detailed information and diff by default
         result = fetcher.get_file_commit_info(file_path, detailed=True, show_diff=True)
         if result:
             results.append(result)
